@@ -21,10 +21,11 @@
 
 #define QSDK_USING_ME3616
 
-//模块波特率选择
-#define USART2_BOUND        BAUD_RATE_9600
-//#define USART2_BOUND        BAUD_RATE_115200
+//模块串口选择
+#define NB_COMM_PORT        "uart2"
 
+//AT命令接收缓冲
+#define AT_CLIENT_RECV_BUFF_LEN 512
 
 /*********************************
 *
@@ -40,6 +41,7 @@
 //onenet服务器配置信息
 #ifdef QSDK_USING_ME3616
 #define QSDK_ONENET_ADDRESS      "183.230.40.39"
+#define QSDK_USING_ME3616_GPS
 #else
 #define QSDK_ONENET_ADDRESS      "183.230.40.40"
 #endif
@@ -86,7 +88,7 @@
 #define QSDK_NET_REV_MAX_LEN		512
 
 //定义模组最大发送数据长度
-#define QSDK_CMD_REV_MAX_LEN		1000
+#define QSDK_CMD_REV_MAX_LEN		256
 
 //定义时区差
 #define QSDK_TIME_ZONE  8

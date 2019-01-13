@@ -127,7 +127,7 @@ int qsdk_init_environment(void)
     hand_thread_id=rt_thread_create("hand_thread",
                                     hand_thread_entry,
                                     RT_NULL,
-                                    1000,
+                                    512,
                                     7,
                                     50);
     if(hand_thread_id!=RT_NULL)
@@ -135,6 +135,7 @@ int qsdk_init_environment(void)
     else
     {
         nb_device.error=qsdk_nb_status_create_hand_fun_failure;
+		LOG_D("creat hand_thread fail.");
         goto fail;
     }
 
@@ -162,6 +163,7 @@ int qsdk_nb_hw_init(void)
 {
     static char status=0;
     int i=5;
+	int res;
     //清空设备结构体
     rt_memset(&nb_device,0,sizeof(nb_device));
     if(status!=1)
@@ -174,6 +176,8 @@ int qsdk_nb_hw_init(void)
         }
         else
         {
+			res = at_client_init(NB_COMM_PORT, AT_CLIENT_RECV_BUFF_LEN);   //初始化AT组件
+			if(res!=RT_EOK) return res;
             if(qsdk_init_environment()!=RT_EOK) return RT_ERROR;
 
             status=1;

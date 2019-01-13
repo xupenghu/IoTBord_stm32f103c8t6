@@ -13,6 +13,11 @@
 
 #include "qsdk.h"
 
+#include <drivers/pin.h>
+
+#define NB_POWER_PIN	38	//PA15
+#define NB_RESET_PIN	22	//PB11
+
 
 int qsdk_hw_io_init(void);
 int qsdk_hw_io_reboot(void);

@@ -9,8 +9,6 @@
  */
 
 #include "qsdk_io.h"
-
-
 /*************************************************************
 *	函数名称：	nb_hw_io_init
 *
@@ -24,10 +22,12 @@
 *************************************************************/
 int qsdk_hw_io_init(void)
 {
-
+	rt_pin_mode(NB_POWER_PIN, PIN_MODE_OUTPUT);
+	rt_pin_mode(NB_RESET_PIN, PIN_MODE_OUTPUT);
+	
     //给开发板 pwrkey 引脚上电
-    HAL_GPIO_WritePin(NB_POWER_GPIO_Port,NB_POWER_Pin,GPIO_PIN_SET);
-    rt_thread_delay(500);
+	rt_pin_write(NB_POWER_PIN,PIN_HIGH);
+    rt_thread_mdelay(500);
     //复位 NB-IOT 模块
     if(qsdk_hw_io_reboot()==RT_EOK)
         return RT_EOK;
@@ -47,10 +47,9 @@ int qsdk_hw_io_init(void)
 *************************************************************/
 int qsdk_hw_io_reboot(void)
 {
-
-    HAL_GPIO_WritePin(NB_RESET_GPIO_Port,NB_RESET_Pin,GPIO_PIN_SET);
-    rt_thread_delay(500);
-    HAL_GPIO_WritePin(NB_RESET_GPIO_Port,NB_RESET_Pin,GPIO_PIN_RESET);
-    rt_thread_delay(5000);
+	rt_pin_write(NB_RESET_PIN, PIN_HIGH);
+    rt_thread_mdelay(500);
+    rt_pin_write(NB_RESET_PIN, PIN_LOW);
+    rt_thread_mdelay(5000);
     return RT_EOK;
 }
