@@ -107,6 +107,7 @@ typedef struct
     char *value;
 } DEVICE;
 
+//数据流结构体
 typedef struct
 {
     int instance;

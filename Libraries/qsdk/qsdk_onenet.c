@@ -45,7 +45,7 @@ static int sys_node_parse(char *str);
 *
 *	入口参数：	lifetime  设备登录超时时间
 *
-* 入口参数：	*config_t	设备注册码
+*   入口参数：	*config_t	设备注册码
 *
 *	返回参数：	0 成功		1  失败
 *
@@ -92,10 +92,9 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
     data_stream.initstep=4;
     data_stream.event_status=qsdk_onenet_status_init;
     count=300;
-
     do {
         count--;
-        rt_thread_delay(100);
+        rt_thread_mdelay(100);
     } while(data_stream.event_status==qsdk_onenet_status_init&& count>0);		//设备进入 event初始化
 
     if(data_stream.event_status==qsdk_onenet_status_init||count<=0||data_stream.event_status==qsdk_onenet_status_failure)
@@ -113,7 +112,7 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
     }
     do {
         count--;
-        rt_thread_delay(100);
+        rt_thread_mdelay(100);
     } while(data_stream.event_status==qsdk_onenet_status_run&&count>0);	//等待模组返回 登录成功的 event事件
     if(data_stream.event_status==qsdk_onenet_status_run)
     {
@@ -145,7 +144,7 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
 
     do {
         count--;
-        rt_thread_delay(100);
+        rt_thread_mdelay(100);
     } while(data_stream.observer_status==qsdk_onenet_status_init&& count>0);			//设备进入 observer初始化
 
     if(data_stream.observer_status==qsdk_onenet_status_init)
@@ -163,7 +162,7 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
     }
     do {
         count--;
-        rt_thread_delay(100);
+        rt_thread_mdelay(100);
     } while(data_stream.observer_status==qsdk_onenet_status_run&&count>0);		//判断设备是否收到 observer信息
     if(data_stream.observer_status==qsdk_onenet_status_run)
     {
@@ -194,10 +193,10 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
     }
     do {
         count--;
-        rt_thread_delay(100);
-    } while(data_stream.discover_status==qsdk_onenet_status_init&& count>0);			//等待否进入 deicover	初始化
+        rt_thread_mdelay(100);
+    } while(data_stream.discover_status==qsdk_onenet_status_init&& count>0);//等待否进入 discover	初始化
 
-    if(data_stream.discover_status==qsdk_onenet_status_init)				//判断是否进入 discover初始化
+    if(data_stream.discover_status==qsdk_onenet_status_init)	//判断是否进入 discover初始化
     {
         data_stream.error=11;
         goto failure;
@@ -212,8 +211,8 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
     }
     do {
         count--;
-        rt_thread_delay(100);
-    } while(data_stream.discover_status==qsdk_onenet_status_run&&count>0);			//等待模组返回 discover信息
+        rt_thread_mdelay(100);
+    } while(data_stream.discover_status==qsdk_onenet_status_run&&count>0);//等待模组返回 discover信息
 
     if(data_stream.discover_status==qsdk_onenet_status_run)
     {
@@ -228,7 +227,7 @@ int qsdk_onenet_init(DEVICE *device,int len,int lifetime)
         data_stream.initstep=12;
     }
 
-    if(data_stream.discover_status==qsdk_onenet_status_success)						//判断	discover 是否初始化成功
+    if(data_stream.discover_status==qsdk_onenet_status_success)	//判断	discover 是否初始化成功
     {
 #ifdef QSDK_USING_DEBUD
         LOG_D("discover success\r\n");
@@ -255,7 +254,7 @@ failure:
     qsdk_onenet_dis_error();							//打印错误值信息
 #endif
     rt_thread_delete(hand_thread_id);			//删除 hand处理函数
-    rt_mb_delete(event_mail);							//删除 event 邮箱
+    rt_mb_delete(event_mail);			        //删除 event 邮箱
     return RT_ERROR;
 }
 
@@ -305,7 +304,7 @@ int qsdk_create_onenet_instance(void)
     }
 
 
-    LOG_D(config_t,"%s%04x%s",config_t,strlen(str)/2+3,str);
+    rt_sprintf(config_t,"%s%04x%s",config_t,strlen(str)/2+3,str);
 
 #ifdef QSDK_USING_DEBUD
     LOG_D("注册码==%s\r\n",config_t);
@@ -358,7 +357,7 @@ int qsdk_create_onenet_object(void)
     int str[QSDK_MAX_OBJECT_COUNT];
 
     //循环添加 object
-    for(; i<data_stream.dev_len; i++)
+    for(i = 0; i<data_stream.dev_len; i++)
     {
         //循环查询object 并且添加到数组，用于记录，防止重复添加
         for(j=0; j<data_stream.objectcount; j++)
@@ -662,7 +661,7 @@ int qsdk_notify_data_to_onenet(_Bool up_status)
                 //LOG_D("\r\n notify to onenet success, objectid:%d 	instanceid:%d 	resourceid:%d		msgid=%d   flge:%d",data_stream.dev[i].objectid,data_stream.dev[i].instanceid,data_stream.dev[i].resourceid,data_stream.dev[i].msgid,data_stream.dev[i].flge);
                 LOG_D("AT+MIPLNOTIFY=%d,%d,%d,%d,%d,%d,%d,\"%s\",0,%d\r\n",data_stream.instance,data_stream.dev[i].msgid,data_stream.dev[i].objectid,data_stream.dev[i].instanceid,data_stream.dev[i].resourceid,data_stream.dev[i].valuetype,strlen(data_stream.dev[i].value),data_stream.dev[i].value,data_stream.dev[i].flge);
 #endif
-                rt_thread_delay(100);
+                rt_thread_mdelay(100);
             }
         }
         //清空设备总上报标识
@@ -679,7 +678,7 @@ int qsdk_notify_data_to_onenet(_Bool up_status)
             //LOG_D("\r\n notify to onenet success, objectid:%d 	instanceid:%d 	resourceid:%d		msgid=%d   flge:%d",data_stream.dev[i].objectid,data_stream.dev[i].instanceid,data_stream.dev[i].resourceid,data_stream.dev[i].msgid,data_stream.dev[i].flge);
             LOG_D("AT+MIPLNOTIFY=%d,%d,%d,%d,%d,%d,%d,\"%s\",0,%d\r\n",data_stream.instance,data_stream.dev[i].msgid,data_stream.dev[i].objectid,data_stream.dev[i].instanceid,data_stream.dev[i].resourceid,data_stream.dev[i].valuetype,strlen(data_stream.dev[i].value),data_stream.dev[i].value,data_stream.dev[i].flge);
 #endif
-            rt_thread_delay(100);
+            rt_thread_mdelay(100);
         }
     }
 
@@ -711,7 +710,7 @@ int qsdk_notify_ack_data_to_onenet(_Bool up_status)
                 //等待平台返回ACK
                 do {
                     count--;
-                    rt_thread_delay(100);
+                    rt_thread_mdelay(100);
                 } while(data_stream.notify_status==qsdk_onenet_status_init&&count>0);
 
                 //判断 notify 状态是否失败
@@ -746,7 +745,7 @@ int qsdk_notify_ack_data_to_onenet(_Bool up_status)
             //等待模组返回 ACK响应
             do {
                 count--;
-                rt_thread_delay(100);
+                rt_thread_mdelay(100);
             } while(data_stream.notify_status==qsdk_onenet_status_init&&count>0);
 
             //判断 ACK 响应是否为失败
@@ -866,9 +865,8 @@ static int head_node_parse(char *str)
 {
     int ver=1;
     int config=3;
-    LOG_D(str,"%d%d",ver,config);
+    rt_sprintf(str,"%d%d",ver,config);
     //LOG_D("%s\r\n",str);
-
     return RT_EOK;
 }
 /****************************************************
@@ -885,7 +883,7 @@ static int init_node_parse(char *str)
     char *head="F";
     int config=1;
     int size=3;
-    LOG_D(str+strlen(str),"%s%d%04x",head,config,size);
+    rt_sprintf(str+strlen(str),"%s%d%04x",head,config,size);
     //LOG_D("%s\r\n",str);
 
     return RT_EOK;
@@ -934,9 +932,9 @@ static int net_node_parse(char *str)
 #endif
     host_len=strlen(host)/2;
     //LOG_D("%s  %d\r\n",host,host_len);
-    LOG_D(buffer,"%04x%x%x%02x%02x%02x%02x%02x%02x%02x%02x%s%04x%s",mtu_size,link_t,band_t,boot_t,apn_len,apn,user_name_len,user_name,passwd_len,passwd,host_len,host,user_data_len,user_data);
+    rt_sprintf(buffer,"%04x%x%x%02x%02x%02x%02x%02x%02x%02x%02x%s%04x%s",mtu_size,link_t,band_t,boot_t,apn_len,apn,user_name_len,user_name,passwd_len,passwd,host_len,host,user_data_len,user_data);
     //LOG_D("%s\r\n",buffer);
-    LOG_D(str+strlen(str),"%s%d%04x%s",head,config,strlen(buffer)/2+3,buffer);
+    rt_sprintf(str+strlen(str),"%s%d%04x%s",head,config,strlen(buffer)/2+3,buffer);
     //LOG_D("%s\r\n",str);
 
     return 0;
@@ -972,10 +970,10 @@ static int sys_node_parse(char *str)
 #endif
 
     if(user_data_len)
-        LOG_D(buffer,"%s%04x%s",debug,user_data_len,user_data);
+        rt_sprintf(buffer,"%s%04x%s",debug,user_data_len,user_data);
     else
-        LOG_D(buffer,"%s%04x",debug,user_data_len);
-    LOG_D(str+strlen(str),"%s%x%04x%s",head,config,strlen(buffer)/2+3,buffer);
+        rt_sprintf(buffer,"%s%04x",debug,user_data_len);
+    rt_sprintf(str+strlen(str),"%s%x%04x%s",head,config,strlen(buffer)/2+3,buffer);
     //LOG_D("%s\r\n",str);
 
     return 0;

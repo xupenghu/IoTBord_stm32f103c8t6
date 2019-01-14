@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-//定义 AT 命令相应结构体指针 相当于是一个全局变量了
+//定义 AT 命令相应结构体指针
 at_response_t at_resp = RT_NULL;
 
 //定义任务控制块
@@ -90,7 +90,7 @@ int qsdk_at_send_data(char *data)
 /*************************************************************
 *	函数名称：	qsdk_init_environment
 *
-*	函数功能：	QSDK 运行环境初始化，初始化at_resp结构体 创建event_mail邮箱，创建hand_thread任务
+*	函数功能：	QSDK 运行环境初始化
 *
 *	入口参数：	无
 *
@@ -121,7 +121,7 @@ int qsdk_init_environment(void)
         nb_device.error=qsdk_nb_status_create_event_mail_failure;
         goto fail;
     }
-    //创建事件响应任务 处理NB模组下发的数据 由event_mail邮箱唤醒
+    //创建事件响应任务
     hand_thread_id=rt_thread_create("hand_thread",
                                     hand_thread_entry,
                                     RT_NULL,
@@ -139,7 +139,7 @@ int qsdk_init_environment(void)
 
     return RT_EOK;
 
-//失败处理
+
 fail:
 #ifdef QSDK_USING_LOG
     qsdk_nb_dis_error();
@@ -176,7 +176,6 @@ int qsdk_nb_hw_init(void)
         {
 			res = at_client_init(NB_COMM_PORT, AT_CLIENT_RECV_BUFF_LEN);   //初始化AT组件
 			if(res!=RT_EOK) return res;
-            //qsdk运行环境初始化
             if(qsdk_init_environment()!=RT_EOK) return RT_ERROR;
 
             status=1;
@@ -218,21 +217,20 @@ start:
     }
 #endif
 
-//首先确定模块是否开机 尝试i次
-    i = 5;
+//首先确定模块是否开机
     do {
         i--;
         if(qsdk_nb_sim_check()!=RT_EOK)
         {
-            rt_thread_mdelay(500);
+            rt_thread_delay(500);
         }
 #ifdef QSDK_USING_LOG
         LOG_D("+CFUN=%d\r\n",nb_device.sim_state);
 #endif
         if(nb_device.sim_state!=1)
-            rt_thread_mdelay(1000);
+            rt_thread_delay(1000);
 
-       }while(nb_device.sim_state==0&&i>0);
+    }	while(nb_device.sim_state==0&&i>0);
 
     if(i<=0)
     {
@@ -240,16 +238,16 @@ start:
         goto fail;
     }
     else {
-        rt_thread_mdelay(1000);
+        i=3;
+        rt_thread_delay(1000);
     }
 
-//获取SIM卡的IMSI号码 尝试i次
-    i = 3;
+//获取SIM卡的IMSI号码
     do {
         i--;
         if(qsdk_nb_get_imsi()!=RT_EOK)
         {
-            rt_thread_mdelay(500);
+            rt_thread_delay(500);
         }
         else
         {
@@ -268,7 +266,8 @@ start:
     }
     else
     {
-        rt_thread_mdelay(100);
+        i=15;
+        rt_thread_delay(100);
     }
 
 //获取模块IMEI
@@ -289,7 +288,7 @@ start:
 
 //如果启用M5310连接IOT平台
 #if	(defined QSDK_USING_M5310)||(defined QSDK_USING_M5310A)
-    rt_thread_mdelay(100);
+    rt_thread_delay(100);
     if(qsdk_iot_open_update_status()!=RT_EOK)
     {
         nb_device.error=qsdk_iot_status_open_update_dis_failure;
@@ -298,7 +297,7 @@ start:
 #ifdef QSDK_USING_DEBUG
     else LOG_D("qsdk open iot update status success\r\n");
 #endif
-    rt_thread_mdelay(100);
+    rt_thread_delay(100);
     if(qsdk_iot_open_down_date_status()!=RT_EOK)
     {
         nb_device.error=qsdk_iot_status_open_down_dis_failure;
@@ -311,13 +310,12 @@ start:
 #endif
 
 #endif
-//获取信号值 尝试i次
-    i = 15;
+//获取信号值
     do {
         i--;
         if(qsdk_nb_get_csq()!=RT_EOK)
         {
-            rt_thread_mdelay(500);
+            rt_thread_delay(500);
         }
         else if(nb_device.csq!=99&&nb_device.csq!=0)
         {
@@ -328,7 +326,7 @@ start:
 #ifdef QSDK_USING_LOG
             LOG_D("CSQ=%d\r\n",nb_device.csq);
 #endif
-            rt_thread_mdelay(3000);
+            rt_thread_delay(3000);
         }
 
     } while(i>0);
@@ -343,13 +341,14 @@ start:
 #ifdef QSDK_USING_LOG
         LOG_D("CSQ=%d\r\n",nb_device.csq);
 #endif
-        rt_thread_mdelay(100);
+        i=30;
+        rt_thread_delay(100);
     }
 //手动附着网络
 #if	(defined QSDK_USING_M5310)||(defined QSDK_USING_M5310A)
     if(qsdk_nb_get_net_start()!=RT_EOK)
     {
-        rt_thread_mdelay(500);
+        rt_thread_delay(500);
     }
     else if(!nb_device.net_connect_ok)
     {
@@ -360,13 +359,12 @@ start:
         }
     }
 #endif
-//获取网络附着状态 尝试i次
-    i = 30;
+//获取网络附着状态
     do {
         i--;
         if(qsdk_nb_get_net_start()!=RT_EOK)
         {
-            rt_thread_mdelay(500);
+            rt_thread_delay(500);
         }
         else if(nb_device.net_connect_ok)
         {
@@ -377,7 +375,7 @@ start:
 #ifdef QSDK_USING_LOG
             LOG_D("CEREG=%d\r\n",nb_device.net_connect_ok);
 #endif
-            rt_thread_mdelay(1000);
+            rt_thread_delay(1000);
         }
 
     } while(i>0);
@@ -387,12 +385,13 @@ start:
         nb_device.error=qsdk_nb_status_fine_net_start_failure;
         goto fail;
     }
-    rt_thread_mdelay(1000);
+    rt_thread_delay(1000);
 #ifdef QSDK_USING_LOG
     LOG_D("CEREG=%d\r\n",nb_device.net_connect_ok);
 #endif
 
 //获取ntp服务器时间
+
     if(qsdk_nb_get_time()!=RT_EOK)
     {
         nb_device.error=qsdk_nb_status_get_ntp_time_failure;
@@ -404,8 +403,8 @@ start:
 
     return RT_EOK;
 
-//中途失败退出
 fail:
+
 #ifdef QSDK_USING_LOG
     qsdk_nb_dis_error();
 #endif
@@ -457,6 +456,7 @@ int qsdk_nb_sim_check(void)
 {
     if(at_exec_cmd(at_resp,"AT+CFUN?")!=RT_EOK)	return RT_ERROR;
     at_resp_parse_line_args(at_resp,2,"+CFUN:%d",&nb_device.sim_state);
+
     return  RT_EOK;
 }
 /*************************************************************
@@ -515,7 +515,7 @@ int qsdk_nb_get_imei(void)
 /*************************************************************
 *	函数名称：	nb_get_time
 *
-*	函数功能：	获取网络时间，这个时间是模组设置的时间，可更改，要获取ntc时间应该用gps里获取到的时间
+*	函数功能：	获取网络时间
 *
 *	入口参数：	无
 *
@@ -577,7 +577,7 @@ int qsdk_nb_set_net_start(void)
 /*************************************************************
 *	函数名称：	nb_get_net_start
 *
-*	函数功能：	获取当前网络附着状态
+*	函数功能：	获取当前网络状态
 *
 *	入口参数：	无
 *
@@ -591,23 +591,7 @@ int qsdk_nb_get_net_start(void)
     if(at_exec_cmd(at_resp,"AT+CEREG?")!=RT_EOK)	return RT_ERROR;
 
     at_resp_parse_line_args(at_resp,2,"+CEREG:%d,%d\r\n",&i,&j);
-#ifdef QSDK_USING_DBUG
-#ifdef QSDK_USING_ME3616
-    LOG_D("网络附着状态返回结果:");
-    switch(j)
-    {
-        case 0:LOG_D("--->没有登录网络,当前没有进行网络搜索"); break;
-        case 1:LOG_D("--->已经登录本地网络"); break;
-        case 2:LOG_D("--->没有登录网络,当前正在搜索网络"); break;
-        case 3:LOG_D("--->注册被拒绝"); break;
-        case 4:LOG_D("--->未知状态"); break;
-        case 5:LOG_D("--->已经登录网络,处于漫游状态"); break;
-        case 6:LOG_D("--->注册到“仅限短信” ,仅当<Act>为 NB-IOT 是才适用"); break;
-        case 7:LOG_D("--->注册到“仅限短信”，处于漫游状态。仅当<Act>为 NB-IOT 时才适用"); break;
-        default:LOG_D("--->未知错误"); break;
-    }
-#endif //QSDK_USING_ME3616 end
-#endif //QSDK_USING_DBUG end
+
     if(j==1) nb_device.net_connect_ok=1;
     else nb_device.net_connect_ok=0;
     return  RT_EOK;
@@ -660,12 +644,12 @@ int qsdk_agps_config(void)
 #ifdef QSDK_USING_DEBUG
         LOG_D("seting gps \r\n");
 #endif
-        rt_thread_mdelay(100);
+        rt_thread_delay(100);
         if(at_exec_cmd(at_resp,"AT+ZGDATA")!=RT_EOK)	return RT_ERROR;
 
         do {
             i--;
-            rt_thread_mdelay(500);
+            rt_thread_delay(500);
             if(at_exec_cmd(at_resp,"AT+ZGDATA?")!=RT_EOK)	return RT_ERROR;
             at_resp_parse_line_args(at_resp,2,"+ZGDATA: %s\r\n",str);
             if(rt_strstr(str,"READY")!=NULL)
@@ -678,10 +662,10 @@ int qsdk_agps_config(void)
 #ifdef QSDK_USING_DEBUG
     LOG_D("gps runing\r\n");
 #endif
-    rt_thread_mdelay(100);
-    if(at_exec_cmd(at_resp,"AT+ZGNMEA=2")!=RT_EOK)	return RT_ERROR;  //2 - RMC
-    rt_thread_mdelay(100);
-    if(at_exec_cmd(at_resp,"AT+ZGRUN=1")!=RT_EOK)	return RT_ERROR;  //启动单次定位模式
+    rt_thread_delay(100);
+    if(at_exec_cmd(at_resp,"AT+ZGNMEA=2")!=RT_EOK)	return RT_ERROR;
+    rt_thread_delay(100);
+    if(at_exec_cmd(at_resp,"AT+ZGRUN=1")!=RT_EOK)	return RT_ERROR;
 
     return	RT_EOK;
 }
@@ -701,9 +685,9 @@ int qsdk_gps_config(void)
     int i=90;
     char str[20];
     if(at_exec_cmd(at_resp,"AT+ZGMODE=2")!=RT_EOK)	return RT_ERROR;
-    rt_thread_mdelay(100);
+    rt_thread_delay(100);
     if(at_exec_cmd(at_resp,"AT+ZGNMEA=2")!=RT_EOK)	return RT_ERROR;
-    rt_thread_mdelay(100);
+    rt_thread_delay(100);
     if(at_exec_cmd(at_resp,"AT+ZGRUN=2")!=RT_EOK)	return RT_ERROR;
 
     return	RT_EOK;

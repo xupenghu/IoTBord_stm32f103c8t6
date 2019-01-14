@@ -193,11 +193,12 @@ void led1_thread_entry(void* parameter)
     }
 }
 
-
+//NB网络初始化以及维持设备在线状态
 void net_thread_entry(void* parameter)
 {
     int i=0;
     int net_socket;
+    //NB-IOT 模块联网初始化
     if(qsdk_nb_hw_init()!=RT_EOK)
     {
         LOG_D("module init failure\r\n");
@@ -219,7 +220,7 @@ void net_thread_entry(void* parameter)
 
 #endif
 
-
+//注册到onenet平台
 #ifdef QSDK_USING_ONENET
 
 #ifdef QSDK_USING_ME3616
