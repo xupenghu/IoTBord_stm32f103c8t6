@@ -87,9 +87,9 @@ DEVICE onenet_device[]= {
     {temp_objectid,2,"11",1,1,temp_exec_instanceid,temp_exec_resourceid,qsdk_onenet_value_Opaque,0,0,0,0,"012345"},
     {hump_objectid,2,"11",1,1,hump_instanceid,hump_resourceid,qsdk_onenet_value_Float,0,0,0,0,hump},
     {hump_objectid,2,"11",1,1,hump_exec_instanceid,hump_exec_resourceid,qsdk_onenet_value_Opaque,0,0,0,0,"012345"},
-    {light0_objectid,3,"111",1,0,light0_instanceid,light0_resourceid,qsdk_onenet_value_Bool,0,0,0,0,led1_status},
-    {light1_objectid,3,"111",1,0,light1_instanceid,light1_resourceid,qsdk_onenet_value_Bool,0,0,0,0,led2_status},
-    {light2_objectid,3,"111",1,0,light2_instanceid,light2_resourceid,qsdk_onenet_value_Bool,0,0,0,0,led3_status},
+//    {light0_objectid,3,"111",1,0,light0_instanceid,light0_resourceid,qsdk_onenet_value_Bool,0,0,0,0,led1_status},
+//    {light1_objectid,3,"111",1,0,light1_instanceid,light1_resourceid,qsdk_onenet_value_Bool,0,0,0,0,led2_status},
+//    {light2_objectid,3,"111",1,0,light2_instanceid,light2_resourceid,qsdk_onenet_value_Bool,0,0,0,0,led3_status},
 
 };
 #endif
@@ -106,7 +106,7 @@ int main(void)
     led_thread_id=rt_thread_create("led_thread",
                                    led1_thread_entry,
                                    RT_NULL,
-                                   512,
+                                   256,
                                    22,
                                    20);
     if(led_thread_id!=RT_NULL)
@@ -116,7 +116,7 @@ int main(void)
     net_thread_id=rt_thread_create("net_thread",
                                    net_thread_entry,
                                    RT_NULL,
-                                   512,
+                                   1024,
                                    10,
                                    20);
     if(net_thread_id!=RT_NULL)
@@ -176,19 +176,20 @@ void led1_thread_entry(void* parameter)
     ledRgbControl(0,0,0);
     while(1)
     {
+		//没连上
         if(nb_device.net_connect_ok==0)
         {
-            ledRgbControl(0,20,0);
-            rt_thread_mdelay(200);
-            ledRgbControl(0,0,0);
-            rt_thread_mdelay(800);
-        }
-        else
-        {
             ledRgbControl(20,0,0);
-            rt_thread_mdelay(500);
+            rt_thread_mdelay(100);
             ledRgbControl(0,0,0);
-            rt_thread_mdelay(500);
+            rt_thread_mdelay(900);
+        }
+        else //连上了
+        {
+            ledRgbControl(0,20,0);
+            rt_thread_mdelay(100);
+            ledRgbControl(0,0,0);
+            rt_thread_mdelay(900);
         }
     }
 }

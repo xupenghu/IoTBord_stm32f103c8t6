@@ -125,9 +125,9 @@ int qsdk_init_environment(void)
     hand_thread_id=rt_thread_create("hand_thread",
                                     hand_thread_entry,
                                     RT_NULL,
-                                    512,
-                                    7,
-                                    50);
+                                    1024,
+                                    5,
+                                    5);
     if(hand_thread_id!=RT_NULL)
         rt_thread_startup(hand_thread_id);
     else
@@ -790,6 +790,17 @@ void qsdk_nb_set_rtc_time(int year,int month,int day,int hour,int min,int sec)
 *
 *	说明：
 *************************************************************/
+/*************************************************************
+*	函数名称：	hand_thread_entry
+*
+*	函数功能：	模组主动上报数据处理函数
+*
+*	入口参数：	无
+*
+*	返回参数：	无
+*
+*	说明：
+*************************************************************/
 void hand_thread_entry(void* parameter)
 {
     rt_err_t status=RT_EOK;
@@ -802,11 +813,11 @@ void hand_thread_entry(void* parameter)
     char *instanceid=NULL;
     char *resourceid=NULL;
 #endif
+	rt_kprintf("[hand thread] hand thread is runing...\r\n");
     while(1)
     {
         //等待事件邮件 event_mail
         status=rt_mb_recv(event_mail,(rt_uint32_t *)&event,RT_WAITING_FOREVER);
-
         //判断是否接收成功
         if(status==RT_EOK)
         {
@@ -1022,7 +1033,7 @@ void hand_thread_entry(void* parameter)
                     break;
                 case  8:
 #ifdef QSDK_USING_LOG
-                    LOG_D("Reg onenet timeout\r\n");
+                   LOG_D("Reg onenet timeout\r\n");
 #endif
                     data_stream.event_status=qsdk_onenet_status_failure;
                     break;

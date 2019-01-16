@@ -19,9 +19,9 @@
 *********************************/
 //#define QSDK_USING_M5310
 
-//#define QSDK_USING_M5310A
+#define QSDK_USING_M5310A
 
-#define QSDK_USING_ME3616
+//#define QSDK_USING_ME3616
 
 //Ä£¿é´®¿ÚÑ¡Ôñ
 #define NB_COMM_PORT        "uart2"

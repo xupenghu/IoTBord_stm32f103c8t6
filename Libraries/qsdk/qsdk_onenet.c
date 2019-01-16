@@ -311,7 +311,7 @@ int qsdk_create_onenet_instance(void)
 #endif
 
     //发送注册命令到模组
-    if(at_exec_cmd(at_resp,"AT+MIPLCREATE=%d,%s,0,%d,0",strlen(config_t)/2,config_t,strlen(config_t)/2)!=RT_EOK) return RT_ERROR;
+    if(at_exec_cmd(at_resp,"AT+MIPLCREATE")!=RT_EOK) return RT_ERROR; //=%d,%s,0,%d,0",strlen(config_t)/2,config_t,strlen(config_t)/2)!=RT_EOK) return RT_ERROR;
 
     //解析模组返回的响应值
     at_resp_parse_line_args(at_resp,2,"+MIPLCREATE:%d",&data_stream.instance);
